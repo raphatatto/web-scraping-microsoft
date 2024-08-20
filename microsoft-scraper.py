@@ -19,108 +19,77 @@ def extract_job_details(page):
 
         # Capture Identifier and Work Area
         identifier_element = page.query_selector('div.IyCDaH20Khhx15uuQqgx div:has-text("Job number")')
-        job_details['jobId'] = identifier_element.inner_text().strip() if identifier_element else 'No Identifier found'
+        job_details['jobId'] = identifier_element.inner_text().strip().replace('\n', ' ') if identifier_element else 'No Identifier found'
 
         workarea_element = page.query_selector('div.IyCDaH20Khhx15uuQqgx div:has-text("Profession")')
-        job_details['workArea'] = workarea_element.inner_text().strip() if workarea_element else 'No Area found'
+        job_details['workArea'] = workarea_element.inner_text().strip().replace('\n', ' ') if workarea_element else 'No Area found'
 
-        # URL for Application
-        application_url_element = page.query_selector('button.ms-Button')
-        job_details['applyURL'] = application_url_element.get_attribute('href') if application_url_element else 'No application URL found'
+        # Capture APPLY URL
+        apply_button = page.query_selector('button[aria-label="Apply"]')
+        job_details['applyURL'] = apply_button.get_attribute('href') if apply_button else 'No apply URL found'
 
-        # Capture Job Description
-        description_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack p')
-        description = " ".join([element.inner_text().strip() for element in description_elements])
-        job_details['description'] = description if description else 'No description found'
+        # Capture other details as before...
 
-        # Capture Responsibilities
-        responsibilities_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack ul')
-        responsibilities = " ".join([element.inner_text().strip() for element in responsibilities_elements])
-        job_details['responsibilities'] = responsibilities if responsibilities else 'No responsibilities found'
-
-        # Capture  Qualifications
-        qualifications_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ')
-        qualifications = " ".join([element.inner_text().strip() for element in qualifications_elements])
-        job_details['qualifications'] = qualifications if qualifications else 'No  qualifications found'
-        
-
-        # Capture all Benefits
-        benefits_elements = page.query_selector_all('div.KDE7kZPL_kjXdvl00Oro > span')
-        benefits = [element.inner_text().strip() for element in benefits_elements]
-        job_details['benefits'] = benefits if benefits else ['No benefits found']
-
-        # Capture Company Name
-        job_details['company'] = 'Microsoft'
-
-        # Capture JSON Schema
-        json_ld_element = page.query_selector('script[type="application/ld+json"]')
-        if json_ld_element:
-            json_data = json_ld_element.inner_text()
-            try:
-                schema_data = json.loads(json_data)
-                job_details['jsonSchema'] = schema_data
-            except json.JSONDecodeError:
-                logging.error("Error decoding JSON-LD schema")
-        
         logging.debug("Extracted job details")
     except Exception as e:
         logging.error("Error extracting job details: %s", e)
 
     return job_details
 
-def scrape_jobs(max_pages=1):
+def scrape_jobs():
     job_listings = []
     page_counter = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-        page.goto('https://jobs.careers.microsoft.com/global/en/search?l=en_us&pg=1&pgSz=20&o=Relevance&flt=true&ref=cms')
-        logging.info("Navigated to job listings page")
-
+        
         while True:
             try:
+                page_counter += 1
+                url = f'https://jobs.careers.microsoft.com/global/en/search?l=en_us&pg={page_counter}&pgSz=20&o=Relevance&flt=true&ref=cms'
+                page.goto(url)
+                logging.info(f"Navigated to job listings page {page_counter}")
+
                 page.wait_for_selector('div.ms-List-cell')
                 listing_elements = page.query_selector_all('div.ms-List-cell')
-                logging.info(f"Found {len(listing_elements)} job listing elements on page {page_counter + 1}")
+                logging.info(f"Found {len(listing_elements)} job listing elements on page {page_counter}")
 
                 for listing in listing_elements:
                     card_element = listing.query_selector('div.ms-DocumentCard')
                     if card_element and card_element.is_visible():
                         try:
                             card_element.click()
-                            page.wait_for_selector('div.ms-DocumentCard h1', timeout=10000)
+                            page.wait_for_selector('div.ms-DocumentCard h1', timeout=60000)
 
                             job_details = extract_job_details(page)
                             job_listings.append(job_details)
 
                             page.go_back()
-                            page.wait_for_selector('div.ms-List-cell', timeout=10000)
+                            page.wait_for_selector('div.ms-List-cell', timeout=60000)
                             time.sleep(1)
                         except Exception as e:
                             logging.error("Error processing listing: %s", e)
                             continue
 
-                page_counter += 1
-                if page_counter >= max_pages:
+                # Check if there is a "Next Page" button available
+                next_button = page.query_selector('button[aria-label="Go to next page"]')
+                if not next_button or next_button.is_disabled():
+                    logging.info(f"No more pages to process. Stopping at page {page_counter}.")
                     break
 
-                next_button = page.query_selector('button[aria-label="Go to next page"]')
-                if next_button and not next_button.is_disabled():
-                    next_button.click()
-                    page.wait_for_timeout(2000)
-                else:
-                    break
+                logging.info(f"Completed page {page_counter}")
 
             except Exception as e:
-                logging.error("Error during scraping: %s", e)
+                logging.error(f"Error during scraping on page {page_counter}: %s", e)
                 break
 
         browser.close()
 
-    with open('microsoft_job_listings.json', 'w', encoding='utf-8') as f:
-        f.write(json.dumps({'listings': job_listings}, indent=2, ensure_ascii=False))
+    # Save all job listings to a JSON file
+    with open('all_job_listings.json', 'w', encoding='utf-8') as f:
+        json.dump({'listings': job_listings}, f, indent=2, ensure_ascii=False)
 
-    logging.info('Job listings have been scraped and saved to microsoft_job_listings.json')
+    logging.info('All job listings have been scraped and saved to all_job_listings.json')
 
-scrape_jobs(max_pages=1)
+scrape_jobs()
