@@ -1,14 +1,24 @@
 {
   "listings": [
     {
-      "title": "Senior Product Manager, Azure Storage Platform Strategy & Planning",
+      "title": "Senior Product Manager",
       "location": "Multiple Locations, United States",
-      "jobId": "Job number\n1721911",
+      "jobId": "Job number\n1712607",
       "workArea": "Profession\nProduct Management",
       "applyURL": null,
-      "description": "No description found",
-      "minimumQualifications": "No qualifications found",
-      "preferredQualifications": "No qualifications found",
+      "description": "Are you passionate about building services and developing teams that help Azure’s biggest customers effectively govern and control their vast cloud environment at scale, to maximize business value, reduce risk and keep operations in compliance?\n\nWe are a team in the Azure Core organization responsible for Azure Resource Manager (ARM). ARM is the control plane API service for all Azure services which enables a consistent way to manage the lifecycle of cloud resources. It also provides central resource governance & query/visibility capabilities to customers.\n\nWe are looking for a Senior Product Manager with effective collaboration skills, proven technical background, passion for quality, customer/partner empathy, and experience building, releasing and continuously improving services through customer focused and data driven metrics. This position requires the ability to gain trust and influence customers, partners, and engineers, a passion for making decisions and designing hypothesizes based on customer data, and a technical working knowledge with cloud computing scenarios.\n\nMicrosoft’s mission is to empower every person and every organization on the planet to achieve more. As employees we come together with a growth mindset, innovate to empower others, and collaborate to realize our shared goals. Each day we build on our values of respect, integrity, and accountability to create a culture of inclusion where everyone can thrive at work and beyond.  In alignment with our Microsoft values, we are committed to cultivating an inclusive work environment for all employees to positively impact our culture every day. Other",
+      "responsibilities": "You will be responsible for driving the products related to cloud governance & control capabilities in Azure like Resource Graph & Resource Notification, which are critical to Azure customers’ visibility & resource inventory management at scale in their cloud environment.\nYou will need to work with major customers, engineering, and many product teams across Azure, customer success & marketing to provide a great end-to-end experience for enabling Azure resources to be governed. This also includes taking a broad view of the services offered in Azure and competitors to understand the opportunities to grow the existing customer base while improving quality, delivery, and supportability.\nYou will partner with others to collect performance metrics and form hypotheses for complex technical needs in order to improve product development in targeted areas. You’ll also identify features to deprecate, manage customer communities, and build trust with targeted customers. Embody our Culture and Values",
+      "qualifications": "Qualifications\n\nRequired Qualifications: \n\nBachelor's Degree AND 5+ years experience in product/service/project/program management or software development\nOR equivalent experience.\n3+ years of experience using high scale RESTful services and APIs.\n\nOther Requirements:\n\nAbility to meet Microsoft, customer and/or government security screening requirements are required for this role. These requirements include, but are not limited to the following specialized security screenings: Microsoft Cloud Background Check: This position will be required to pass the Microsoft Cloud background check upon hire/transfer and every two years thereafter.\n\n \n\nAdditional / Preferred Qualifcations: \n\n5+ years of experience building and using high scale RESTful services and APIs\n\n2+ Experience with KQL, CosmosDB, Event Grid and Event Hub\n\nExperience with data and business analytics and using business insights to track usage, adoption, and funnel analysis to increase success\n\nExperience in software solutions preferably in large scale apps and solutions in cloud\n\nBoth Microsoft technologies and open source experience\n\nProficient leadership with proven track record of product management competencies, including customer focus, communication, and business/strategic acumen\n\nProduct Management IC4 - The typical base pay range for this role across the U.S. is USD $112,000 - $218,400 per year. There is a different range applicable to specific work locations, within the San Francisco Bay area and New York City metropolitan area, and the base pay range for this role in those locations is USD $145,800 - $238,600 per year.\n\nCertain roles may be eligible for benefits and other compensation. Find additional benefits and pay information here: https://careers.microsoft.com/us/en/us-corporate-pay\n\n \n\nMicrosoft will accept applications for the role until September 3, 2024.\n\n\n \n\n \n\n#Azurecorejobs",
+      "benefits": [
+        "Industry leading healthcare",
+        "Educational resources",
+        "Discounts on products and services",
+        "Savings and investments",
+        "Maternity and paternity leave",
+        "Generous time away",
+        "Giving programs",
+        "Opportunities to network and connect"
+      ],
       "company": "Microsoft"
     }
   ]

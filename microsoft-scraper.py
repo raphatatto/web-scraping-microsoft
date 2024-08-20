@@ -9,33 +9,50 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 def extract_job_details(page):
     job_details = {}
     try:
+        # Capture Job Title
         title_element = page.query_selector('div.ms-DocumentCard h1')
         job_details['title'] = title_element.inner_text().strip() if title_element else 'No title found'
 
+        # Capture Location
         location_element = page.query_selector('div.ms-Stack-inner p')
         job_details['location'] = location_element.inner_text().strip() if location_element else 'No location found'
 
+        # Capture Identifier and Work Area
         identifier_element = page.query_selector('div.IyCDaH20Khhx15uuQqgx div:has-text("Job number")')
         job_details['jobId'] = identifier_element.inner_text().strip() if identifier_element else 'No Identifier found'
 
         workarea_element = page.query_selector('div.IyCDaH20Khhx15uuQqgx div:has-text("Profession")')
         job_details['workArea'] = workarea_element.inner_text().strip() if workarea_element else 'No Area found'
 
+        # URL for Application
         application_url_element = page.query_selector('button.ms-Button')
         job_details['applyURL'] = application_url_element.get_attribute('href') if application_url_element else 'No application URL found'
 
-        description_element = page.query_selector('div.MKwm2_A5wy0mMoh9vTuX:has(h3:has-text("Overview")) ~ div')
-        job_details['description'] = description_element.inner_text().strip() if description_element else 'No description found'
+        # Capture Job Description
+        description_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack p')
+        description = " ".join([element.inner_text().strip() for element in description_elements])
+        job_details['description'] = description if description else 'No description found'
 
+        # Capture Responsibilities
+        responsibilities_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack ul')
+        responsibilities = " ".join([element.inner_text().strip() for element in responsibilities_elements])
+        job_details['responsibilities'] = responsibilities if responsibilities else 'No responsibilities found'
 
-        minimum_qualifications_element = page.query_selector('div.section:has(h2:has-text("BASIC QUALIFICATIONS")) p')
-        job_details['minimumQualifications'] = minimum_qualifications_element.inner_text().strip() if minimum_qualifications_element else 'No description found'
+        # Capture  Qualifications
+        qualifications_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ')
+        qualifications = " ".join([element.inner_text().strip() for element in qualifications_elements])
+        job_details['qualifications'] = qualifications if qualifications else 'No  qualifications found'
         
-        preferred_qualifications_element = page.query_selector('div.section:has(h2:has-text("PREFERRED QUALIFICATIONS")) p')
-        job_details['preferredQualifications'] = preferred_qualifications_element.inner_text().strip() if preferred_qualifications_element else 'No description found'
 
-        job_details['company'] = 'Amazon'
+        # Capture all Benefits
+        benefits_elements = page.query_selector_all('div.KDE7kZPL_kjXdvl00Oro > span')
+        benefits = [element.inner_text().strip() for element in benefits_elements]
+        job_details['benefits'] = benefits if benefits else ['No benefits found']
 
+        # Capture Company Name
+        job_details['company'] = 'Microsoft'
+
+        # Capture JSON Schema
         json_ld_element = page.query_selector('script[type="application/ld+json"]')
         if json_ld_element:
             json_data = json_ld_element.inner_text()
@@ -43,7 +60,7 @@ def extract_job_details(page):
                 schema_data = json.loads(json_data)
                 job_details['jsonSchema'] = schema_data
             except json.JSONDecodeError:
-                print("Error decoding JSON-LD schema")
+                logging.error("Error decoding JSON-LD schema")
         
         logging.debug("Extracted job details")
     except Exception as e:
@@ -102,7 +119,7 @@ def scrape_jobs(max_pages=1):
         browser.close()
 
     with open('microsoft_job_listings.json', 'w', encoding='utf-8') as f:
-        json.dump({'listings': job_listings}, f, indent=2, ensure_ascii=False)
+        f.write(json.dumps({'listings': job_listings}, indent=2, ensure_ascii=False))
 
     logging.info('Job listings have been scraped and saved to microsoft_job_listings.json')
 
