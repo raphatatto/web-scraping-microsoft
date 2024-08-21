@@ -18,16 +18,38 @@ def extract_job_details(page):
         job_details['location'] = location_element.inner_text().strip() if location_element else 'No location found'
 
         # Capture Identifier and Work Area
-        identifier_element = page.query_selector('div.IyCDaH20Khhx15uuQqgx div:has-text("Job number")')
-        job_details['jobId'] = identifier_element.inner_text().strip().replace('\n', ' ') if identifier_element else 'No Identifier found'
+        detail_elements = page.query_selector_all('div.IyCDaH20Khhx15uuQqgx > div.ms-Stack')
+        for element in detail_elements:
+            # The second child contains the value in bold
+            value_element = element.query_selector('div:nth-child(2)')
+            value = value_element.inner_text().strip() if value_element else 'No value found'
+            
+            # Determine which title it is by its sibling
+            title_element = element.query_selector('div:nth-child(1)')
+            title = title_element.inner_text().strip() if title_element else 'No title found'
+            
+            if title == "Date posted":
+                job_details['datePosted'] = value
+            elif title == "Job number":
+                job_details['jobId'] = value
+            elif title == "Work site":
+                job_details['workSite'] = value
+            elif title == "Role type":
+                job_details['roleType'] = value
+            elif title == "Profession":
+                job_details['profession'] = value
+            elif title == "Employment type":
+                job_details['employmentType'] = value
+            elif title == "Travel":
+                job_details['travel'] = value
+            elif title == "Discipline":
+                job_details['discipline'] = value
 
-        workarea_element = page.query_selector('div.IyCDaH20Khhx15uuQqgx div:has-text("Profession")')
-        job_details['workArea'] = workarea_element.inner_text().strip().replace('\n', ' ') if workarea_element else 'No Area found'
+        
 
-        # URL for Application
+        # button for Application
         apply_button = page.query_selector('a[data-test-id="applyButton"]') 
         job_details['applyURL'] = apply_button.get_attribute('href') if apply_button else 'No apply URL found'
-
 
         # Capture Job Description without explicit line breaks
         description_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack p')
@@ -40,8 +62,8 @@ def extract_job_details(page):
         job_details['responsibilities'] = responsibilities if responsibilities else 'No responsibilities found'
 
         # Capture Qualifications without explicit line breaks
-        qualifications_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ')
-        qualifications = " ".join([element.inner_text().strip().replace('\n', ' ') for element in qualifications_elements])
+        minimum_qualifications_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ div.ms-Stack div:has-text("Required/minimum qualifications") ul li')
+        qualifications = " ".join([element.inner_text().strip().replace('\n', ' ') for element in minimum_qualifications_elements])
         job_details['Qualifications'] = qualifications if qualifications else 'No qualifications found'
         
         # Capture all Benefits
@@ -77,41 +99,30 @@ def scrape_jobs():
         page.goto('https://jobs.careers.microsoft.com/global/en/search?l=en_us&pg=1&pgSz=20&o=Relevance&flt=true&ref=cms')
         logging.info("Navigated to job listings page")
 
-        while True:
-            try:
-                page.wait_for_selector('div.ms-List-cell')
-                listing_elements = page.query_selector_all('div.ms-List-cell')
-                logging.info(f"Found {len(listing_elements)} job listing elements on current page")
+        try:
+            page.wait_for_selector('div.ms-List-cell')
+            listing_elements = page.query_selector_all('div.ms-List-cell')
+            logging.info(f"Found {len(listing_elements)} job listing elements on current page")
 
-                for listing in listing_elements:
-                    card_element = listing.query_selector('div.ms-DocumentCard')
-                    if card_element and card_element.is_visible():
-                        try:
-                            card_element.click()
-                            page.wait_for_selector('div.ms-DocumentCard h1', timeout=10000)
+            for listing in listing_elements:
+                card_element = listing.query_selector('div.ms-DocumentCard')
+                if card_element and card_element.is_visible():
+                    try:
+                        card_element.click()
+                        page.wait_for_selector('div.ms-DocumentCard h1', timeout=10000)
 
-                            job_details = extract_job_details(page)
-                            job_listings.append(job_details)
+                        job_details = extract_job_details(page)
+                        job_listings.append(job_details)
 
-                            page.go_back()
-                            page.wait_for_selector('div.ms-List-cell', timeout=10000)
-                            time.sleep(1)
-                        except Exception as e:
-                            logging.error("Error processing listing: %s", e)
-                            continue
+                        page.go_back()
+                        page.wait_for_selector('div.ms-List-cell', timeout=10000)
+                        time.sleep(1)
+                    except Exception as e:
+                        logging.error("Error processing listing: %s", e)
+                        continue
 
-                # Try to move to the next page
-                next_button = page.query_selector('button[aria-label="Go to next page"]')
-                if next_button and not next_button.is_disabled():
-                    next_button.click()
-                    page.wait_for_timeout(2000)
-                else:
-                    logging.info("No more pages to process. Stopping.")
-                    break
-
-            except Exception as e:
-                logging.error("Error during scraping: %s", e)
-                break
+        except Exception as e:
+            logging.error("Error during scraping: %s", e)
 
         browser.close()
 
