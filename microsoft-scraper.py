@@ -57,7 +57,7 @@ def extract_job_details(page):
         job_details['description'] = description if description else 'No description found'
 
         # Capture Responsibilities without explicit line breaks
-        responsibilities_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack ul')
+        responsibilities_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack div ul')
         responsibilities = " ".join([element.inner_text().strip().replace('\n', ' ') for element in responsibilities_elements])
         job_details['responsibilities'] = responsibilities if responsibilities else 'No responsibilities found'
 
@@ -70,7 +70,7 @@ def extract_job_details(page):
         other_requirements = [loc.inner_text().strip() for loc in other_requirements_elements]
         job_details['otherRequirements'] = ', '.join(other_requirements)
         
-        preferred_qualification_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ:has(h3:has-text("Responsibilities"))div')
+        preferred_qualification_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ:has(p:has-text("Preferred Qualification"))ul')
         preferred_qualification = [loc.inner_text().strip() for loc in preferred_qualification_elements]
         job_details['preferredRequirements'] = ', '.join(preferred_qualification)
         
