@@ -52,7 +52,7 @@ def extract_job_details(page):
         job_details['applyURL'] = apply_button.get_attribute('href') if apply_button else 'No apply URL found'
 
         # Capture Job Description without explicit line breaks
-        description_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack p')
+        description_elements = page.query_selector_all('div.MKwm2_A5wy0mMoh9vTuX div.ms-Stack:has(h3:has-text("Overview")) p')
         description = " ".join([element.inner_text().strip().replace('\n', ' ') for element in description_elements])
         job_details['description'] = description if description else 'No description found'
 
@@ -62,10 +62,19 @@ def extract_job_details(page):
         job_details['responsibilities'] = responsibilities if responsibilities else 'No responsibilities found'
 
         # Capture Qualifications without explicit line breaks
-        minimum_qualifications_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ div.ms-Stack div:has-text("Required/minimum qualifications") ul li')
+        minimum_qualifications_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ div.ms-Stack ul:nth-child(1)')
         qualifications = " ".join([element.inner_text().strip().replace('\n', ' ') for element in minimum_qualifications_elements])
-        job_details['Qualifications'] = qualifications if qualifications else 'No qualifications found'
+        job_details['minimumQualifications'] = qualifications if qualifications else 'No qualifications found'
+
+        other_requirements_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ:has(p:has-text("Other Requirements"))ul')
+        other_requirements = [loc.inner_text().strip() for loc in other_requirements_elements]
+        job_details['otherRequirements'] = ', '.join(other_requirements)
         
+        preferred_qualification_elements = page.query_selector_all('div.WzU5fAyjS4KUVs1QJGcQ:has(h3:has-text("Responsibilities"))div')
+        preferred_qualification = [loc.inner_text().strip() for loc in preferred_qualification_elements]
+        job_details['preferredRequirements'] = ', '.join(preferred_qualification)
+        
+
         # Capture all Benefits
         benefits_elements = page.query_selector_all('div.KDE7kZPL_kjXdvl00Oro > span')
         benefits = [element.inner_text().strip().replace('\n', ' ') for element in benefits_elements]
